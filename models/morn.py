@@ -131,8 +131,8 @@ class MORN(nn.Module):
                 total_img[0:self.targetH, self.targetW+5:2*self.targetW+5] = img_copy
                 total_img[0:self.targetH, self.targetW*2+10:3*self.targetW+10] = img_processed
                 total_img = cv2.resize(total_img.astype(np.uint8), (300, 50))
-                # cv2.imshow("Input_Offsets_Output", total_img)
-                # cv2.waitKey()
+                cv2.imshow("Input_Offsets_Output", total_img)
+                cv2.waitKey()
 
             return x_rectified, total_img
 

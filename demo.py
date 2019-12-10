@@ -7,8 +7,8 @@ from collections import OrderedDict
 import cv2
 from models.moran import MORAN
 
-model_path = './demo.pth'
-img_path = './demo/0.png'
+model_path = './output/myexp/990_0.pth'
+img_path = './demo/2.png'
 alphabet = '0:1:2:3:4:5:6:7:8:9:a:b:c:d:e:f:g:h:i:j:k:l:m:n:o:p:q:r:s:t:u:v:w:x:y:z:$'
 
 cuda_flag = False

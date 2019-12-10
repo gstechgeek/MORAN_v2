@@ -3,68 +3,56 @@ import torch
 from torch.utils.data import Dataset
 import torchvision.transforms as transforms
 from torch.utils.data import sampler
-import lmdb
 import six
 import sys
 from PIL import Image
 import numpy as np
 
+
 class lmdbDataset(Dataset):
-
-    def __init__(self, root=None, transform=None, reverse=False, alphabet='0123456789abcdefghijklmnopqrstuvwxyz'):
-        self.env = lmdb.open(
-            root,
-            max_readers=1,
-            readonly=True,
-            lock=False,
-            readahead=False,
-            meminit=False)
-
-        if not self.env:
-            print('cannot creat lmdb from %s' % (root))
-            sys.exit(0)
-
-        with self.env.begin(write=False) as txn:
-            nSamples = int(txn.get('num-samples'.encode()))
-            self.nSamples = nSamples
-
+    """
+        New Dataloader Test Class
+    """ 
+    def __init__(self, rootfile, transform=None, reverse=False, mode=True, alphabet='0123456789abcdefghijklmnopqrstuvwxyz'):
+        self.rootfile = rootfile
         self.transform = transform
         self.alphabet = alphabet
         self.reverse = reverse
+        self.listIdx = []
+        self.img_loc = []
+        self.text = []
+        split = 0.75
+
+        with open(rootfile, 'r') as f:
+            self.listIdx = f.readlines()
+
+        if mode:
+            self.listIdx = self.listIdx[:int(split * len(self.listIdx))]
+        else:
+            self.listIdx = self.listIdx = self.listIdx[int(split * len(self.listIdx)):]
+
+        for i in range(len(self.listIdx)):
+            loc, txt = self.listIdx[i].split('\n')[0].split(':')
+            self.img_loc.append(loc)
+            self.text.append(txt)
 
     def __len__(self):
-        return self.nSamples
+        return len(self.listIdx)
 
-    def __getitem__(self, index):
-        assert index <= len(self), 'index range error'
-        index += 1
-        with self.env.begin(write=False) as txn:
-            img_key = 'image-%09d' % index
-            imgbuf = txn.get(img_key.encode())
-
-            buf = six.BytesIO()
-            buf.write(imgbuf)
-            buf.seek(0)
-            try:
-                img = Image.open(buf).convert('L')
-            except IOError:
-                print('Corrupted image for %d' % index)
-                return self[index + 1]
-
-            label_key = 'label-%09d' % index
-            label = str(txn.get(label_key.encode()).decode('utf-8'))
-
-            label = ''.join(label[i] if label[i].lower() in self.alphabet else '' 
+    def __getitem__(self, idx):
+        img = Image.open(self.img_loc[idx]).convert('L')
+        label = self.text[idx]
+        label = ''.join(label[i] if label[i].lower() in self.alphabet else ''
                 for i in range(len(label)))
-            if len(label) <= 0:
-                return self[index + 1]
-            if self.reverse:
-                label_rev = label[-1::-1]
-                label_rev += '$'
-            label += '$'
-            
-            if self.transform is not None:
-                img = self.transform(img)
+        if len(label) <= 0:
+            return self[idx + 1]
+        if self.reverse:
+            label_rev = label[-1::-1]
+            label_rev += '$'
+        label += '$'
+
+        if self.transform is not None:
+            img = self.transform(img)
 
         if self.reverse:
             return (img, label, label_rev)

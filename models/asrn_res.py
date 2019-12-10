@@ -189,9 +189,9 @@ class ResNet(nn.Module):
         self.block0 = nn.Sequential(nn.Conv2d(c_in, 32, 3, 1, 1),nn.BatchNorm2d(32, momentum=0.01))
         self.block1 = self._make_layer(32, 32, 2, 3)
         self.block2 = self._make_layer(32, 64, 2, 4)
-        self.block3 = self._make_layer(64, 128, (2,1), 6)
-        self.block4 = self._make_layer(128, 256, (2,1), 6)
-        self.block5 = self._make_layer(256, 512, (2,1), 3)
+        self.block3 = self._make_layer(64, 128, (2, 1), 6)
+        self.block4 = self._make_layer(128, 256, (2, 1), 6)
+        self.block5 = self._make_layer(256, 512, (2, 1), 3)
 
     def _make_layer(self,c_in,c_out,stride,repeat=3):
         layers = []
@@ -231,10 +231,10 @@ class ASRN(nn.Module):
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
-                nn.init.kaiming_normal(m.weight, mode='fan_out', a=0)
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', a=0)
             elif isinstance(m, nn.BatchNorm2d):
-                nn.init.constant(m.weight, 1)
-                nn.init.constant(m.bias, 0)
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
 
     def forward(self, input, length, text, text_rev, test=False):
         # conv features
